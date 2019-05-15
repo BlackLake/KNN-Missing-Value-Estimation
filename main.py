@@ -53,20 +53,21 @@ def euclidean_distance(a, b, length, missing_value_index):
     return distance
 
 
-def weighted_average(nearest_neighbours, weights, missing_value_index):
+def weighted_average(nearest_neighbours, distances, missing_value_index):
     weighted_values = 0
     total_weight = 0
-    matching_values = 0
+    matching_value = 0
     for i in range(len(nearest_neighbours)):
-        if weights[i] == 0:
-            matching_values += nearest_neighbours.iloc[i, missing_value_index]
+        if distances[i] == 0:
+            matching_value = nearest_neighbours.iloc[i, missing_value_index]
+            break
         else:
-            weighted_values += nearest_neighbours.iloc[i, missing_value_index] * (1 / weights[i])
-            total_weight += (1 / weights[i])
-    if matching_values == 0:
+            weighted_values += nearest_neighbours.iloc[i, missing_value_index] * (1 / distances[i])
+            total_weight += (1 / distances[i])
+    if matching_value == 0:
         estimated_value = weighted_values / total_weight
     else:
-        estimated_value = matching_values / k
+        estimated_value = matching_value
     return estimated_value
 
 
