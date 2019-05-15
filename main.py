@@ -2,20 +2,28 @@ import math
 from random import randint
 import numpy as np
 import pandas as pd
+from pandas import ExcelWriter
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 200)
 
-xl_file = pd.ExcelFile("energy-efficiency.xlsx")
+xl_file = pd.ExcelFile("iris-data.xlsx")
 dfs = pd.read_excel(xl_file)
 
-k = 3
+k = 5
 
 ratio_number = 4
+
+result_list = []
 
 
 def normalize_dataset(dataset):
     normalized_dataset = (dataset - dataset.min()) / (dataset.max() - dataset.min())
+
+    writer = ExcelWriter('normalized.xlsx')
+    normalized_dataset.to_excel(writer, 'normalized')
+    writer.save()
+
     return normalized_dataset
 
 
@@ -29,9 +37,6 @@ def remove_random_values(dataset):
 def create_test_set(dataset):
     test_dataset = dataset.iloc[0::ratio_number, :]
     train_dataset = dataset.drop(test_dataset.index)
-
-    # train_dataset = train_dataset.reset_index(drop=True)
-    # test_dataset = test_dataset.reset_index(drop=True)
 
     test_dataset = remove_random_values(test_dataset.copy())
 
@@ -99,10 +104,13 @@ def knn(training_set, test_instance, instance_index, k):
     estimated_value = weighted_average(nearest_neighbours, distances[0:k], missing_value_index)
 
     error = abs(estimated_value - dfs.iloc[instance_index][missing_value_index])
-    print("Test instacne index : ", instance_index)
+    print("Test instance index : ", instance_index)
+    print("Missing index : ", missing_value_index)
     print("Estimated value :", estimated_value)
     print("Real value      :", dfs.iloc[instance_index][missing_value_index])
     print("Error percentage: %", error * 100)
+    result_list.append((instance_index, missing_value_index, estimated_value,
+                        dfs.iloc[instance_index][missing_value_index], error * 100))
 
 
 dfs = normalize_dataset(dfs)
@@ -114,7 +122,17 @@ dfs_train, dfs_test = create_test_set(dfs)
 
 
 for i in range(len(dfs_test)):
-    knn(dfs_train, dfs_test.iloc[i, :], i * 4, k)
+    knn(dfs_train, dfs_test.iloc[i, :], i * ratio_number, k)
     print("############")
 
-# knn(dfs_train, dfs_test.iloc[1, :], k)
+for result in result_list:
+    print(result)
+
+
+results = pd.DataFrame(result_list)
+results.columns = ['Test instance index', 'Missing index', 'Estimated value', 'Real value', 'Error percentage']
+
+
+writer = ExcelWriter('results.xlsx')
+results.to_excel(writer, 'results')
+writer.save()
