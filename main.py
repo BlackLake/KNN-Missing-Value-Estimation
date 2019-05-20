@@ -10,7 +10,7 @@ pd.set_option('display.width', 200)
 xl_file = pd.ExcelFile("iris-data.xlsx")
 dfs = pd.read_excel(xl_file)
 
-k = 5
+k = 3
 
 ratio_number = 4
 
@@ -126,8 +126,8 @@ for i in range(len(dfs_test)):
     knn(dfs_train, dfs_test.iloc[i, :], i * ratio_number, k)
     print("############")
 
-for result in result_list:
-    print(result)
+# for result in result_list:
+#     print(result)
 
 
 results = pd.DataFrame(result_list)
